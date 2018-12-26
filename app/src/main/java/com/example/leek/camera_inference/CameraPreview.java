@@ -42,6 +42,7 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
     static long start, end;
     static long e2e_start, e2e_end;
     static long timer[] = new long[10];
+    float dum[] = new float[1000];
 
     private AppCompatActivity mActivity;
 
@@ -258,6 +259,7 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
                 // ***The parameter 'data' holds the frame information***
                 Camera.Parameters parameters = camera.getParameters();
                 DetectManager.detect(data,parameters.getPreviewSize().width,parameters.getPreviewSize().height);
+                DetectManager.get_out_data(dum);
                 // redundant
                 DetectManager.delete_out_data();
                 /*

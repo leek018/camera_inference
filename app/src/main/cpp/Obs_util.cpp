@@ -24,12 +24,12 @@ int Isnear(float *raw_data ) {
     int far_away =  obj_bottom < bottom_threshold ? True : False;
 
     if (right_area) {
-        if(far_away) return weak_right_case;
-        return nothing_or_detect_low_probability;
+        if(far_away) return nothing_or_detect_low_probability;
+        return weak_right_case;
     }
     else if(left_area) {
-        if(far_away) return weak_left_case;
-        return weak_center_case;
+        if(far_away) return nothing_or_detect_low_probability;
+        return weak_left_case ;
     }
     else {  //middle area
         if(far_away) return weak_center_case;
@@ -57,10 +57,8 @@ void gauge_control(float *raw_data,Obs_gauge *stair_gauge) {
     int current_weak_center_temp = stair_gauge->current_weak_center_gauge;
     int current_weak_left_temp = stair_gauge->current_weak_left_gauge;
     int current_weak_right_temp = stair_gauge->current_weak_right_gauge;
-
-    //int current_weak_temp = stair_gauge->current_weak_gauge;
-
     int current_strong_temp = stair_gauge->current_strong_gauge;
+
     case_ = Isnear(raw_data);
     if (case_ == weak_center_case) {
         stair_gauge->current_weak_center_gauge = (current_weak_center_temp < gauge_length) ? ++current_weak_center_temp : gauge_length;
@@ -68,23 +66,22 @@ void gauge_control(float *raw_data,Obs_gauge *stair_gauge) {
         stair_gauge->current_weak_right_gauge = (current_weak_right_temp > gauge_init_val) ? --current_weak_right_temp : gauge_init_val;
         stair_gauge->current_strong_gauge = (current_strong_temp > gauge_init_val) ? --current_strong_temp : gauge_init_val;
     } else if (case_ == weak_left_case) {
-        stair_gauge->current_weak_center_gauge = (current_weak_center_temp > gauge_length) ? --current_weak_center_temp : gauge_init_val;
-        stair_gauge->current_weak_left_gauge = (current_weak_left_temp < gauge_init_val) ? ++current_weak_left_temp : gauge_length;
+        stair_gauge->current_weak_center_gauge = (current_weak_center_temp > gauge_init_val) ? --current_weak_center_temp : gauge_init_val;
+        stair_gauge->current_weak_left_gauge = (current_weak_left_temp < gauge_length) ? ++current_weak_left_temp : gauge_length;
         stair_gauge->current_weak_right_gauge = (current_weak_right_temp > gauge_init_val) ? --current_weak_right_temp : gauge_init_val;
         stair_gauge->current_strong_gauge = (current_strong_temp > gauge_init_val) ? --current_strong_temp : gauge_init_val;
     }else if (case_ == weak_right_case) {
-        stair_gauge->current_weak_center_gauge = (current_weak_center_temp > gauge_length) ? --current_weak_center_temp : gauge_init_val;
+        stair_gauge->current_weak_center_gauge = (current_weak_center_temp > gauge_init_val) ? --current_weak_center_temp : gauge_init_val;
         stair_gauge->current_weak_left_gauge = (current_weak_left_temp > gauge_init_val) ? --current_weak_left_temp : gauge_init_val;
-        stair_gauge->current_weak_right_gauge = (current_weak_right_temp < gauge_init_val) ? ++current_weak_right_temp : gauge_length;
-
+        stair_gauge->current_weak_right_gauge = (current_weak_right_temp < gauge_length) ? ++current_weak_right_temp : gauge_length;
         stair_gauge->current_strong_gauge = (current_strong_temp > gauge_init_val) ? --current_strong_temp : gauge_init_val;
     }else if (case_ == strong_case) {
-        stair_gauge->current_weak_center_gauge = (current_weak_center_temp > gauge_length) ? --current_weak_center_temp : gauge_init_val;
+        stair_gauge->current_weak_center_gauge = (current_weak_center_temp > gauge_init_val) ? --current_weak_center_temp : gauge_init_val;
         stair_gauge->current_weak_left_gauge = (current_weak_left_temp > gauge_init_val) ? --current_weak_left_temp : gauge_init_val;
         stair_gauge->current_weak_right_gauge = (current_weak_right_temp > gauge_init_val) ? --current_weak_right_temp : gauge_init_val;
-        stair_gauge->current_strong_gauge = (current_strong_temp < gauge_init_val) ? ++current_strong_temp : gauge_length;
+        stair_gauge->current_strong_gauge = (current_strong_temp < gauge_length) ? ++current_strong_temp : gauge_length;
     } else {
-        stair_gauge->current_weak_center_gauge = (current_weak_center_temp > gauge_length) ? --current_weak_center_temp : gauge_init_val;
+        stair_gauge->current_weak_center_gauge = (current_weak_center_temp > gauge_init_val) ? --current_weak_center_temp : gauge_init_val;
         stair_gauge->current_weak_left_gauge = (current_weak_left_temp > gauge_init_val) ? --current_weak_left_temp : gauge_init_val;
         stair_gauge->current_weak_right_gauge = (current_weak_right_temp > gauge_init_val) ? --current_weak_right_temp : gauge_init_val;
         stair_gauge->current_strong_gauge = (current_strong_temp > gauge_init_val) ? --current_strong_temp : gauge_init_val;
@@ -99,7 +96,7 @@ int get_state(Obs_gauge *stair_gauge)
     else if( stair_gauge->current_weak_right_gauge >= gauge_length/2)
         return Weak_right_state;
     else if(stair_gauge->current_weak_left_gauge >= gauge_length/2)
-        return Weak_right_state;
+        return Weak_left_state;
     else if( stair_gauge->current_strong_gauge >= gauge_length/2 )
         return Strong_state;
     else

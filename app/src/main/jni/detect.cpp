@@ -15,7 +15,7 @@
 #define FIXED_HEIGHT 300
 #define CHANNEL 3
 #define IMG_SIZE FIXED_WIDTH * FIXED_HEIGHT * CHANNEL
-#define IDX_OF_STAIR 0
+#define IDX_OF_STAIR 1
 #define OBS_POINTER_BUFFER_SIZE 100
 
 //global variable
@@ -104,6 +104,7 @@ Java_com_example_leek_camera_1inference_DetectManager_detect(JNIEnv *env, jclass
     gettimeofday(&start, NULL);
 
     int res = detect(global_input,&out_data,global_graph,global_tensor_input,&global_tensor_out,&num_detected_obj,IMG_SIZE);
+    LOGI("NUM","NUM %d",num_detected_obj);
     //post_process_ssd("/sdcard/saved_images/leek.jpg",threshold,out_data,num_detected_obj,"/sdcard/saved_images/leek_processed.jpg");
 
     gettimeofday(&end, NULL);
@@ -164,7 +165,7 @@ Java_com_example_leek_camera_1inference_DetectManager_get_1graph_1space(JNIEnv *
         return JNI_FALSE;
 //    int result = graph_ready(&global_graph, &global_tensor_input, dims, model_name, model_path,
 //            proto_path, device_type);
-    int result = graph_ready(&global_graph,&global_tensor_input,dims,model_name,model_path,proto_path,nullptr);
+    int result = graph_ready(&global_graph,&global_tensor_input,dims,model_name,model_path,proto_path,"acl_opencl");
 
 
     env->ReleaseStringUTFChars(model_name_, model_name);
@@ -194,20 +195,22 @@ Java_com_example_leek_camera_1inference_DetectManager_get_1out_1data(JNIEnv *env
     for (int i=0; i<num_detected_obj; i++)
     {
         if( data[1] > threshold ) {
-            if( data[0] != IDX_OF_STAIR ) {
+            LOGI("INDEX","INDEX: %d",(int)data[0]);
+            if( (int)data[0] != IDX_OF_STAIR ) {
                 temp_processed_data[0] = data[0];
                 temp_processed_data[1] = -1;
                 temp_processed_data[2] = data[2];
                 temp_processed_data[3] = data[3];
                 temp_processed_data[4] = data[4];
                 temp_processed_data[5] = data[5];
+                temp_processed_data+=6;
             } else {
                 obs_pointer_buffer[++top] = data;
             }
         }
         data+=6;
-        temp_processed_data+=6;
     }
+    LOGI("TOP","top %d",top);
     for(int i = 0 ; i<= top ; i++){
         float* loaded_obs_pointer = obs_pointer_buffer[i];
         gauge_control(loaded_obs_pointer,&stair_guage);
@@ -222,6 +225,11 @@ Java_com_example_leek_camera_1inference_DetectManager_get_1out_1data(JNIEnv *env
     if(top == -1){
         gauge_control(nullptr,&stair_guage);
     }
+    LOGI("STAIR","current_weak_right_gauge %d",stair_guage.current_weak_right_gauge);
+    LOGI("STAIR","current_weak_left_gauge %d",stair_guage.current_weak_left_gauge);
+    LOGI("STAIR","current_weak_center_gauge %d",stair_guage.current_weak_center_gauge);
+    LOGI("STAIR","current_strong_gauge %d",stair_guage.current_strong_gauge);
+
     env->ReleaseFloatArrayElements(data_of_java_, data_of_java, 0);
     return JNI_TRUE;
 
